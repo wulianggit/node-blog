@@ -1,4 +1,5 @@
 var mongodb = require('./db.js');
+var markdown= require('markdown').markdown;
 
 function Post(name, title, post) {
     this.name  = name;
@@ -74,12 +75,15 @@ Post.get = function (name, callback) {
 
             collection.find(query).sort({
                 time:-1
-            }).toArray(function (err, doc) {
+            }).toArray(function (err, docs) {
                 mongodb.close();
                 if (err) {
                     return callback(err);
                 }
-                callback(null, doc);
+                docs.forEach(function (doc) {
+                    doc.post = markdown.toHTML(doc.post);
+                });
+                callback(null, docs);
             });
         });
     });

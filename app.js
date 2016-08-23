@@ -11,6 +11,7 @@ var settings = require('./setting');
 var session = require('express-session');
 var MongoStore = require('connect-mongo')(session);
 var flash = require('connect-flash');
+var multer  = require('multer');
 
 var app = express();
 
@@ -37,6 +38,13 @@ app.use(session({
   store: new MongoStore({
     url: 'mongodb://localhost/blog'
   })
+}));
+
+app.use(multer({
+  dest: './public/images',
+  rename: function (fieldname, filename) {
+    return filename;
+  }
 }));
 
 routes(app);

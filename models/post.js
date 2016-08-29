@@ -92,6 +92,50 @@ Post.getAll = function (name, callback) {
 }
 
 
+Post.getTen = function (name, page, callback) {
+    mongodb.open(function (err, db) {
+        if (err) {
+            return callback(err);
+        }
+
+        db.collection('posts', function (err, collection) {
+            if (err) {
+                mongodb.close();
+                return callback(err);
+            }
+            var query = {};
+            if (name) {
+                query.name = name;
+            }
+
+            collection.count(query, function (err, total) {
+                if (err) {
+                    mongodb.close();
+                    return callback(err);
+                }
+                collection.find(query, {
+                    skip: (page - 1) * 10,
+                    limit:10
+                }).sort({
+                    time: -1
+                }).toArray(function (err, docs) {
+                    mongodb.close();
+                    if (err) {
+                        return callback(err);
+                    }
+
+                    docs.forEach(function (doc) {
+                        doc.post = markdown.toHTML(doc.post);
+                    });
+
+                    callback(null, docs, total);
+                });
+            });
+        });
+    });
+}
+
+
 // 根据用户名  发表时间  以及文章标题精确的获取一篇文章
 Post.getOne = function (name, day, title, callback) {
     mongodb.open(function (err, db) {

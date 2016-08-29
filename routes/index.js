@@ -11,8 +11,10 @@ var Comment = require('../models/comment.js');
 module.exports = function (app) {
 	// 首页
 	app.get('/', function (req, res) {
+		// 判断文章请求页
+		var page = parseInt(req.query.p) || 1;
 		// 读取文章
-		Post.getAll(null, function (err, posts) {
+		Post.getTen(null, page, function (err, posts, total) {
 			if (err) {
 				posts = [];
 			}
@@ -21,6 +23,9 @@ module.exports = function (app) {
 				title: '首页',
 				user : req.session.user,
 				posts: posts,
+				page: page,
+				isFirstPage: (page - 1) == 0,
+				isLastPage: ((page - 1) * 10 + posts.length) == total,
 				success: req.flash('success').toString(),
 				error:req.flash('error').toString()
 			});
@@ -191,8 +196,9 @@ module.exports = function (app) {
         		res.redirect('/');
         	}
 
+        	var page = parseInt(req.query.p) || 1;
             // 查询并返回该用户的所有文章
-            Post.getAll(user.name, function (err, posts) {
+            Post.getTen(user.name, page, function (err, posts, total) {
             	if (err) {
             		req.flash('error', err);
             		res.redirect('/');
@@ -202,6 +208,9 @@ module.exports = function (app) {
             		title:user.name,
             		user:req.session.user,
             		posts:posts,
+            		page: page,
+            		isFirstPage: (page - 1) == 0,
+            		isLastPage: ((page - 1) * 10 + posts.length) == total,
             		success:req.flash('success').toString(),
             		error:req.flash('error').toString()
             	});
